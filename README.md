@@ -12,7 +12,10 @@ a module was loaded. You can also force it to save the cache or load the cache u
 
 Usage:
 
-* to enable, import the module and start
+nodeModuleCache.start([opts])
+===
+
+Starts the caching
 
 ```
 var nodeModuleCache = require("node-module-location-cache");
@@ -24,6 +27,29 @@ Start accepts an options parameter with two options
    * ```checkModuleFileExistance``` - if to check that a file actually exists at the cached location before returning the location.
    The default is false (for better performance).
 
-* ```nodeModuleCache.stop();``` - stops the module
-* ```nodeModuleCache.saveCache();``` - saves the cache file
-* ```nodeModuleCache.loadCache();``` - loads the cache file
+nodeModuleCache.stop()
+===
+
+stops the module
+
+```
+nodeModuleCache.stop();
+```
+
+nodeModuleCache.saveCache()
+===
+
+saves the cache file
+
+```
+nodeModuleCache.saveCache();
+```
+
+nodeModuleCache.loadCache()
+===
+
+loads the cache file
+
+```
+nodeModuleCache.loadCache();
+```
