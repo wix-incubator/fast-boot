@@ -9,14 +9,12 @@ var util = require('util');
 describe("fast-boot", function () {
 
   beforeEach(function () {
-    try {
-    fs.unlinkSync(nodeModuleCache.DEFAULT_CACHE_FILE);
-    }
-    catch (e) {}
+    deleteCacheFile();
+    deleteStartupFile();
   });
 
   it("should not prevent loading NPM modules", function(done) {
-    var child = childProcess.fork("./test/test-app.js", ["1.0.0"]);
+    var child = runChild("1.0.0", "loadExpress");
     child.on("message", function(data) {
 
       logStuff("first", "1.0.0", data);
@@ -30,12 +28,48 @@ describe("fast-boot", function () {
   });
 
   it("should not search for files again on second invocation of node", function(done) {
-    var child = childProcess.fork("./test/test-app.js", ["1.0.0"]);
+    var child = runChild("1.0.0", "loadExpress");
     child.on("message", function(data) {
 
       logStuff("first", "1.0.0", data);
 
-      var child2 = childProcess.fork("./test/test-app.js", ["1.0.0"]);
+      var child2 = runChild("1.0.0", "loadExpress");
+      child2.on("message", function(data2) {
+
+        logStuff("second", "1.0.0", data2);
+        expect(data.statSyncCount).to.be.above(data2.statSyncCount);
+        expect(data.readFileSyncCount).to.be.above(data2.readFileSyncCount);
+
+        done();
+      })
+    })
+  });
+
+  it("should not cache if using a different cache killer (the version parameter)", function(done) {
+    var child = runChild("1.0.0", "loadExpress");
+    child.on("message", function(data) {
+
+      logStuff("first", "1.0.0", data);
+
+      var child2 = runChild("1.0.1", "loadExpress");
+      child2.on("message", function(data2) {
+
+        logStuff("second", "1.0.1", data2);
+        expect(data.statSyncCount).to.be.equal(data2.statSyncCount);
+        expect(data.readFileSyncCount).to.be.equal(data2.readFileSyncCount);
+
+        done();
+      })
+    })
+  });
+
+  it("should not cache project modules", function(done) {
+    var child = runChild("1.0.0", "loadExpressAndProjectModule");
+    child.on("message", function(data) {
+
+      logStuff("first", "1.0.0", data);
+
+      var child2 = runChild("1.0.0", "loadExpressAndProjectModule");
       child2.on("message", function(data2) {
 
         logStuff("second", "1.0.0", data2);
@@ -49,26 +83,24 @@ describe("fast-boot", function () {
     })
   });
 
-  it("should not cache if using a different cache killer (the version parameter)", function(done) {
-    var child = childProcess.fork("./test/test-app.js", ["1.0.0"]);
+  it("should load module locations from startup list", function(done) {
+    var child = runChild("1.0.0", "loadExpressAndSaveStartup");
     child.on("message", function(data) {
 
       logStuff("first", "1.0.0", data);
+      deleteCacheFile();
 
-      var child2 = childProcess.fork("./test/test-app.js", ["1.0.1"]);
+      var child2 = runChild("1.0.0", "loadExpress");
       child2.on("message", function(data2) {
 
-        logStuff("second", "1.0.1", data2);
-        expect(data.statSyncCount).to.be.equal(data2.statSyncCount);
-        expect(data.readFileSyncCount).to.be.equal(data2.readFileSyncCount);
+        logStuff("second", "1.0.0", data2);
+        expect(data.statSyncCount).to.be.above(data2.statSyncCount);
+        expect(data.readFileSyncCount).to.be.above(data2.readFileSyncCount);
 
-        var moduleLocationsCache = loadModuleLocationsCache();
-        expect(moduleLocationsCache).to.satisfy(noNonNodeModulesPaths);
         done();
       })
     })
   });
-
 });
 
 function loadModuleLocationsCache() {
@@ -87,12 +119,30 @@ function noNonNodeModulesPaths(moduleLocationsCache) {
   return true;
 }
 
+function runChild(version, command) {
+  return childProcess.fork("./test/test-app.js", [version, command]);
+}
+
 function hrTimeToSecString(hrTime) {
   return hrTime[0] + "." + String('000000000'+hrTime[1]).slice(-9)
 }
 
 function logStuff(run, version, data) {
-  console.log(util.format("%s run  [%s]: %s Sec, statSync: %d, readFileSync: %d, existsSyncCount: %d", run, version,
+  console.log(util.format("        - %s run  [%s]: %s Sec, statSync: %d, readFileSync: %d, existsSyncCount: %d", run, version,
     hrTimeToSecString(data.loadingTime), data.statSyncCount, data.readFileSyncCount, data.existsSyncCount));
 
+}
+function deleteCacheFile() {
+  try {
+    fs.unlinkSync(nodeModuleCache.DEFAULT_CACHE_FILE);
+  }
+  catch (e) {
+  }
+}
+function deleteStartupFile() {
+  try {
+    fs.unlinkSync(nodeModuleCache.DEFAULT_STARTUP_FILE);
+  }
+  catch (e) {
+  }
 }

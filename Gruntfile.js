@@ -12,15 +12,6 @@ module.exports = function (grunt) {
           bail: false
         },
         src: ['test/**/*-spec.js']
-      },
-      dataSpecs: {
-        options: {
-          reporter: 'spec',
-          quiet: false,
-          clearRequireCache: false,
-          bail: false
-        },
-        src: ['dataspecs-test/**/*-spec.js']
       }
     }
   });

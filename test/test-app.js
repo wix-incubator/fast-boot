@@ -3,8 +3,12 @@ var nodeModuleCache = require("../");
 var fs = require('fs');
 
 var version = "0.0.1";
+var command;
 if (process.argv.length > 2)
   version = process.argv[2];
+
+if (process.argv.length > 3)
+  command = process.argv[3];
 
 nodeModuleCache.start({cacheKiller: version});
 
@@ -31,15 +35,33 @@ fs.existsSync = function(path) {
   return orig.existsSync(path);
 };
 
+if (command === "loadExpress") {
+  var express = require('express')();
+  nodeModuleCache.saveCache();
+}
+else if (command === "loadExpressAndProjectModule"){
+  var testModule = require("./test-module");
+  var express = require('express')();
+  nodeModuleCache.saveCache();
+}
+else if (command === "loadExpressAndSaveStartup"){
+  var express = require('express')();
+  nodeModuleCache.saveStartupList();
+}
 
-var testModule = require("./test-module");
-var express = require('express')();
 
-nodeModuleCache.saveCache();
-
-process.send({
-  statSyncCount: statSyncCount,
-  readFileSyncCount: readFileSyncCount,
-  existsSyncCount: existsSyncCount,
-  loadingTime: process.hrtime(start)
-});
+if (process.send)
+  process.send({
+    statSyncCount: statSyncCount,
+    readFileSyncCount: readFileSyncCount,
+    existsSyncCount: existsSyncCount,
+    loadingTime: process.hrtime(start)
+  });
+else {
+  console.log({
+    statSyncCount: statSyncCount,
+    readFileSyncCount: readFileSyncCount,
+    existsSyncCount: existsSyncCount,
+    loadingTime: process.hrtime(start)
+  })
+}

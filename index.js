@@ -1,9 +1,13 @@
 var Module = require('module')
-  , fs = require('fs');
+  , fs = require('fs')
+  , os = require('os')
+  , path = require('path');
 
 var _resolveFilename = Module._resolveFilename;
-var DEFAULT_CACHE_FILE = './node_modules/module-locations-cache.json';
+var DEFAULT_STARTUP_FILE = path.normalize('./node_modules/module-locations-startup.json');
+var DEFAULT_CACHE_FILE = path.join(os.tmpdir(), 'module-locations-cache.json') ;
 var options = {
+  startupFile: DEFAULT_STARTUP_FILE,
   cacheFile: DEFAULT_CACHE_FILE,
   cacheKiller: versionNumber()
 };
@@ -26,14 +30,20 @@ function resolveFilenameOptimized(request, parent) {
   }
 }
 
-function loadCache() {
+function loadModuleList() {
   try {
     if (fs.existsSync(options.cacheFile)) {
       var readFileNameLookup = JSON.parse(fs.readFileSync(options.cacheFile, 'utf-8'));
       if ((!options.cacheKiller) || (readFileNameLookup._cacheKiller === options.cacheKiller))
         filenameLookup = readFileNameLookup;
     }
-  } catch (e) {
+    else if (fs.existsSync(options.startupFile)) {
+      var readFileNameLookup = JSON.parse(fs.readFileSync(options.startupFile, 'utf-8'));
+      if ((!options.cacheKiller) || (readFileNameLookup._cacheKiller === options.cacheKiller))
+        filenameLookup = readFileNameLookup;
+    }
+  }
+  catch (e) {
     console.log(e);
     filenameLookup = newFilenameLookup();
   }
@@ -49,7 +59,7 @@ function start(opts) {
     }
   }
   Module._resolveFilename = resolveFilenameOptimized;
-  loadCache();
+  loadModuleList();
 }
 
 function stop() {
@@ -59,6 +69,11 @@ function stop() {
 
 function saveCache() {
   fs.writeFileSync(options.cacheFile, JSON.stringify(filenameLookup));
+  clearSaveCacheTimer();
+}
+
+function saveStartupList() {
+  fs.writeFileSync(options.startupFile, JSON.stringify(filenameLookup));
   clearSaveCacheTimer();
 }
 
@@ -87,8 +102,10 @@ function newFilenameLookup() {
   return {_cacheKiller: options.cacheKiller}
 }
 
-module.exports.loadCache = loadCache;
+module.exports.loadModuleList = loadModuleList;
 module.exports.start = start;
 module.exports.stop = stop;
 module.exports.saveCache = saveCache;
+module.exports.saveStartupList = saveStartupList;
 module.exports.DEFAULT_CACHE_FILE = DEFAULT_CACHE_FILE;
+module.exports.DEFAULT_STARTUP_FILE = DEFAULT_STARTUP_FILE;
