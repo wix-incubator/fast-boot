@@ -18,7 +18,8 @@ describe("fast-boot", function () {
   it("should not prevent loading NPM modules", function(done) {
     var child = childProcess.fork("./test/test-app.js", ["1.0.0"]);
     child.on("message", function(data) {
-      console.log(util.format("first run  [%s]: %s Sec, statSync: %d, readFileSync: %d, existsSyncCount: %d", "1.0.0", hrTimeToSecString(data.loadingTime), data.statSyncCount, data.readFileSyncCount, data.existsSyncCount));
+
+      logStuff("first", "1.0.0", data);
       expect(data.statSyncCount).to.be.above(100);
       expect(data.readFileSyncCount).to.be.above(100);
 
@@ -31,13 +32,15 @@ describe("fast-boot", function () {
   it("should not search for files again on second invocation of node", function(done) {
     var child = childProcess.fork("./test/test-app.js", ["1.0.0"]);
     child.on("message", function(data) {
-      console.log(util.format("first run  [%s]: %s Sec, statSync: %d, readFileSync: %d, existsSyncCount: %d", "1.0.0", hrTimeToSecString(data.loadingTime), data.statSyncCount, data.readFileSyncCount, data.existsSyncCount));
+
+      logStuff("first", "1.0.0", data);
 
       var child2 = childProcess.fork("./test/test-app.js", ["1.0.0"]);
       child2.on("message", function(data2) {
+
+        logStuff("second", "1.0.0", data2);
         expect(data.statSyncCount).to.be.above(data2.statSyncCount);
         expect(data.readFileSyncCount).to.be.above(data2.readFileSyncCount);
-        console.log(util.format("second run [%s]: %s Sec, statSync: %d, readFileSync: %d, existsSyncCount: %d", "1.0.0", hrTimeToSecString(data2.loadingTime), data2.statSyncCount, data2.readFileSyncCount, data2.existsSyncCount));
 
         var moduleLocationsCache = loadModuleLocationsCache();
         expect(moduleLocationsCache).to.satisfy(noNonNodeModulesPaths);
@@ -49,11 +52,13 @@ describe("fast-boot", function () {
   it("should not cache if using a different cache killer (the version parameter)", function(done) {
     var child = childProcess.fork("./test/test-app.js", ["1.0.0"]);
     child.on("message", function(data) {
-      console.log(util.format("first run  [%s]: %s Sec, statSync: %d, readFileSync: %d, existsSyncCount: %d", "1.0.0", hrTimeToSecString(data.loadingTime), data.statSyncCount, data.readFileSyncCount, data.existsSyncCount));
+
+      logStuff("first", "1.0.0", data);
 
       var child2 = childProcess.fork("./test/test-app.js", ["1.0.1"]);
       child2.on("message", function(data2) {
-        console.log(util.format("second run [%s]: %s Sec, statSync: %d, readFileSync: %d, existsSyncCount: %d", "1.0.1", hrTimeToSecString(data2.loadingTime), data2.statSyncCount, data2.readFileSyncCount, data2.existsSyncCount));
+
+        logStuff("second", "1.0.1", data2);
         expect(data.statSyncCount).to.be.equal(data2.statSyncCount);
         expect(data.readFileSyncCount).to.be.equal(data2.readFileSyncCount);
 
@@ -84,4 +89,10 @@ function noNonNodeModulesPaths(moduleLocationsCache) {
 
 function hrTimeToSecString(hrTime) {
   return hrTime[0] + "." + String('000000000'+hrTime[1]).slice(-9)
+}
+
+function logStuff(run, version, data) {
+  console.log(util.format("%s run  [%s]: %s Sec, statSync: %d, readFileSync: %d, existsSyncCount: %d", run, version,
+    hrTimeToSecString(data.loadingTime), data.statSyncCount, data.readFileSyncCount, data.existsSyncCount));
+
 }
