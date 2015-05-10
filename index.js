@@ -31,17 +31,19 @@ function resolveFilenameOptimized(request, parent) {
 }
 
 function loadModuleList() {
+
+  function tryLoadingFile(file) {
+    if (fs.existsSync(file)) {
+      var readFileNameLookup = JSON.parse(fs.readFileSync(file, 'utf-8'));
+      if ((!options.cacheKiller) || (readFileNameLookup._cacheKiller === options.cacheKiller))
+        filenameLookup = readFileNameLookup;
+      return true;
+    }
+    return false;
+  }
+
   try {
-    if (fs.existsSync(options.cacheFile)) {
-      var readFileNameLookup = JSON.parse(fs.readFileSync(options.cacheFile, 'utf-8'));
-      if ((!options.cacheKiller) || (readFileNameLookup._cacheKiller === options.cacheKiller))
-        filenameLookup = readFileNameLookup;
-    }
-    else if (fs.existsSync(options.startupFile)) {
-      var readFileNameLookup = JSON.parse(fs.readFileSync(options.startupFile, 'utf-8'));
-      if ((!options.cacheKiller) || (readFileNameLookup._cacheKiller === options.cacheKiller))
-        filenameLookup = readFileNameLookup;
-    }
+    tryLoadingFile(options.cacheFile) || tryLoadingFile(options.startupFile);
   }
   catch (e) {
     console.log(e);
