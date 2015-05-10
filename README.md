@@ -1,4 +1,4 @@
-# node-module-location-cache
+# fast-boot
 Caching of the FS location of node modules between node process startups
 
 The module hooks into the node module module and changes the ```_resolveFilename``` method, caching the files it finds
@@ -18,7 +18,7 @@ nodeModuleCache.start([opts])
 Starts the caching
 
 ```
-var nodeModuleCache = require("node-module-location-cache");
+var nodeModuleCache = require("fast-boot");
 nodeModuleCache.start();
 ```
 
@@ -26,6 +26,9 @@ Start accepts an options parameter with two options
    * ```cacheFile``` - alternate cache file. Defaults to ```'./node_modules/module-locations-cache.json'```
    * ```checkModuleFileExistance``` - if to check that a file actually exists at the cached location before returning the location.
    The default is false (for better performance).
+   * ```cacheKiller``` - used to invalidate the cache. Normally one will pass the application version number assuming that a different version
+   may have different version of dependencies making modules located in different locations. The default is the version number from package.json,
+   if one exists
 
 nodeModuleCache.stop()
 ===

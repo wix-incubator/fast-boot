@@ -1,5 +1,5 @@
 {
-  "name": "node-module-location-cache",
+  "name": "fast-boot",
   "version": "1.0.0",
   "description": "Caching of the FS location of node modules between node process startups",
   "main": "index.js",
