@@ -19,11 +19,12 @@ Starts the caching
 
 ```
 var nodeModuleCache = require("fast-boot");
-nodeModuleCache.start();
+nodeModuleCache.start(opts);
 ```
 
 Start accepts an options parameter with two options
-   * ```cacheFile``` - alternate cache file. Defaults to ```'./node_modules/module-locations-cache.json'```
+   * ```cacheFile``` - alternate cache file location. Defaults to ```{os.tmpdir()}/module-locations-cache.json```
+   * ```startupFile``` - alternate startup file location. Defaults to ```./node_modules/module-locations-cache.json```, relative to the ```process.cwd()```
    * ```cacheKiller``` - used to invalidate the cache. Normally one will pass the application version number assuming that a different version
    may have different version of dependencies making modules located in different locations. The default is the version number from package.json,
    if one exists
@@ -46,11 +47,36 @@ saves the cache file
 nodeModuleCache.saveCache();
 ```
 
-nodeModuleCache.loadCache()
+nodeModuleCache.saveStartupList()
 ===
 
-loads the cache file
+saves the startup file
 
 ```
-nodeModuleCache.loadCache();
+nodeModuleCache.saveStartupList();
+```
+
+nodeModuleCache.loadModuleList()
+===
+
+reloads the modules list from the cache file (if exists) or the startup file (if exists)
+
+```
+nodeModuleCache.loadModuleList();
+```
+
+nodeModuleCache.stats()
+===
+
+returns a statistics object about the caching effectiveness. The stats object include the following members
+
+* cacheHit - the number of modules who's locations were found in the cache
+* cacheMiss - the number of modules who's locations were not found in the cache - and were added to the cache file
+* notCached - the number of modules not to be cached - either not in a node_modules folder or not under process.cwd()
+
+```
+var stats = nodeModuleCache.stats();
+console.log(stats.cacheHit);
+console.log(stats.cacheMiss);
+console.log(stats.notCached);
 ```

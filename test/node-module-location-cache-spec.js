@@ -37,6 +37,7 @@ describe("fast-boot", function () {
       child2.on("message", function(data2) {
 
         logStuff("second", "1.0.0", data2);
+        expect(data2.cacheMiss).to.be.equal(0);
         expect(data.statSyncCount).to.be.above(data2.statSyncCount);
         expect(data.readFileSyncCount).to.be.above(data2.readFileSyncCount);
 
@@ -55,6 +56,7 @@ describe("fast-boot", function () {
       child2.on("message", function(data2) {
 
         logStuff("second", "1.0.1", data2);
+        expect(data2.cacheMiss).not.to.be.equal(0);
         expect(data.statSyncCount).to.be.equal(data2.statSyncCount);
         expect(data.readFileSyncCount).to.be.equal(data2.readFileSyncCount);
 
@@ -73,6 +75,7 @@ describe("fast-boot", function () {
       child2.on("message", function(data2) {
 
         logStuff("second", "1.0.0", data2);
+        expect(data2.cacheMiss).to.be.equal(0);
         expect(data.statSyncCount).to.be.above(data2.statSyncCount);
         expect(data.readFileSyncCount).to.be.above(data2.readFileSyncCount);
 
@@ -94,10 +97,36 @@ describe("fast-boot", function () {
       child2.on("message", function(data2) {
 
         logStuff("second", "1.0.0", data2);
+        expect(data2.cacheMiss).to.be.equal(0);
         expect(data.statSyncCount).to.be.above(data2.statSyncCount);
         expect(data.readFileSyncCount).to.be.above(data2.readFileSyncCount);
 
         done();
+      })
+    })
+  });
+
+  it("should load base modules from startup, adding more to cache if needed", function(done) {
+    var child = runChild("1.0.0", "loadExpressAndSaveStartup");
+    child.on("message", function(data) {
+
+      logStuff("first", "1.0.0", data);
+      deleteCacheFile();
+
+      var child2 = runChild("1.0.0", "loadExpress");
+      child2.on("message", function(data2) {
+
+        logStuff("second", "1.0.0", data2);
+        expect(data2.cacheMiss).to.be.equal(0);
+
+        var child3 = runChild("1.0.0", "loadExpressAndBrowserify");
+        child3.on("message", function(data3) {
+
+          logStuff("second", "1.0.0", data3);
+          expect(data3.cacheMiss).not.to.be.equal(0);
+
+          done();
+        })
       })
     })
   });
@@ -154,6 +183,7 @@ describe("fast-boot", function () {
 
 });
 
+
 function loadModuleLocationsCache() {
   var content = fs.readFileSync(nodeModuleCache.DEFAULT_CACHE_FILE);
   return JSON.parse(content);
@@ -183,6 +213,7 @@ function logStuff(run, version, data) {
     hrTimeToSecString(data.loadingTime), data.statSyncCount, data.readFileSyncCount, data.existsSyncCount));
 
 }
+
 function deleteCacheFile() {
   try {
     fs.unlinkSync(nodeModuleCache.DEFAULT_CACHE_FILE);
@@ -190,6 +221,7 @@ function deleteCacheFile() {
   catch (e) {
   }
 }
+
 function deleteStartupFile() {
   try {
     fs.unlinkSync(nodeModuleCache.DEFAULT_STARTUP_FILE);

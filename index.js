@@ -12,19 +12,47 @@ var options = {
   cacheKiller: versionNumber()
 };
 var filenameLookup = newFilenameLookup();
+var cwd = process.cwd();
+var stats = {
+  cacheHit: 0,
+  cacheMiss: 0,
+  notCached: 0
+};
+
+function toCanonicalPath(filename) {
+  var relative = path.relative(cwd, filename);
+  // do not cache files outside of the process.cwd() scope
+  if (relative.indexOf("..") == 0)
+    return undefined;
+
+  return relative.replace("\\\\", "/")
+}
+
+function toAbsolutePath(filename) {
+  return path.join(cwd, filename);
+}
 
 function resolveFilenameOptimized(request, parent) {
-  var key = (request + ':' + parent.id);
-  var filename = filenameLookup[key];
+  var key = (toCanonicalPath(parent.id) + ":" + request );
+  var canonical = filenameLookup[key];
+  var filename = undefined;
+  if (canonical)
+    filename = toAbsolutePath(canonical);
+
   if (filename && fs.existsSync(filename)) {
+    stats.cacheHit++;
     return filename;
   }
   else {
     filename = _resolveFilename.apply(Module, arguments);
-    if (filename.indexOf("node_modules") > -1) {
-      filenameLookup[key] = filename;
+    canonical = toCanonicalPath(filename);
+    if (canonical && canonical.indexOf("node_modules") > -1) {
+      filenameLookup[key] = canonical;
       scheduleSaveCache();
-      return filename;
+      stats.cacheMiss++;
+    }
+    else {
+      stats.notCached++;
     }
     return filename;
   }
@@ -54,6 +82,8 @@ function start(opts) {
   if (opts) {
     if (opts.cacheFile)
       options.cacheFile = opts.cacheFile;
+    if (opts.startupFile)
+      options.startupFile = opts.startupFile;
     if (opts.cacheKiller) {
       options.cacheKiller = opts.cacheKiller;
       filenameLookup._cacheKiller = options.cacheKiller;
@@ -109,3 +139,10 @@ module.exports.saveCache = saveCache;
 module.exports.saveStartupList = saveStartupList;
 module.exports.DEFAULT_CACHE_FILE = DEFAULT_CACHE_FILE;
 module.exports.DEFAULT_STARTUP_FILE = DEFAULT_STARTUP_FILE;
+module.exports.stats = function () {
+  return {
+    cacheHit: stats.cacheHit,
+    cacheMiss: stats.cacheMiss,
+    notCached: stats.notCached
+  }
+}
