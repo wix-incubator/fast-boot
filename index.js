@@ -143,6 +143,7 @@ module.exports.stats = function () {
   return {
     cacheHit: stats.cacheHit,
     cacheMiss: stats.cacheMiss,
-    notCached: stats.notCached
+    notCached: stats.notCached,
+    cacheKiller: filenameLookup._cacheKiller
   }
 }

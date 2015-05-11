@@ -73,6 +73,7 @@ returns a statistics object about the caching effectiveness. The stats object in
 * cacheHit - the number of modules who's locations were found in the cache
 * cacheMiss - the number of modules who's locations were not found in the cache - and were added to the cache file
 * notCached - the number of modules not to be cached - either not in a node_modules folder or not under process.cwd()
+* cacheKiller - the current value of the cache killer
 
 ```
 var stats = nodeModuleCache.stats();
