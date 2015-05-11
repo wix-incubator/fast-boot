@@ -1,4 +1,4 @@
-# [![NPM version][npm-image]][npm-url]
+[![NPM version](https://img.shields.io/npm/v/fast-boot.svg)](https://www.npmjs.com/package/fast-boot)
 
 # fast-boot
 Caching of the FS location of node modules between node process startups
