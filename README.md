@@ -12,8 +12,8 @@ a module was loaded. You can also force it to save the cache or load the cache u
 
 Usage:
 
-nodeModuleCache.start([opts])
-===
+# nodeModuleCache.start([opts])
+
 
 Starts the caching
 
@@ -29,8 +29,7 @@ Start accepts an options parameter with two options
    may have different version of dependencies making modules located in different locations. The default is the version number from package.json,
    if one exists
 
-nodeModuleCache.stop()
-===
+# nodeModuleCache.stop()
 
 stops the module
 
@@ -38,8 +37,7 @@ stops the module
 nodeModuleCache.stop();
 ```
 
-nodeModuleCache.saveCache()
-===
+# nodeModuleCache.saveCache()
 
 saves the cache file
 
@@ -47,8 +45,7 @@ saves the cache file
 nodeModuleCache.saveCache();
 ```
 
-nodeModuleCache.saveStartupList()
-===
+# nodeModuleCache.saveStartupList()
 
 saves the startup file
 
@@ -56,8 +53,7 @@ saves the startup file
 nodeModuleCache.saveStartupList();
 ```
 
-nodeModuleCache.loadModuleList()
-===
+# nodeModuleCache.loadModuleList()
 
 reloads the modules list from the cache file (if exists) or the startup file (if exists)
 
@@ -65,8 +61,7 @@ reloads the modules list from the cache file (if exists) or the startup file (if
 nodeModuleCache.loadModuleList();
 ```
 
-nodeModuleCache.stats()
-===
+# nodeModuleCache.stats()
 
 returns a statistics object about the caching effectiveness. The stats object include the following members
 
