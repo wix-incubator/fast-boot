@@ -10,9 +10,9 @@ node-module-location-cache caches only location of files in the ```node_modules`
 by default, node-module-location-cache will save the modules locations cache under node_modules 10 seconds after
 a module was loaded. You can also force it to save the cache or load the cache using the API methods
 
-Usage:
+# Reference:
 
-# nodeModuleCache.start([opts])
+## nodeModuleCache.start([opts])
 
 
 Starts the caching
@@ -29,7 +29,7 @@ Start accepts an options parameter with two options
    may have different version of dependencies making modules located in different locations. The default is the version number from package.json,
    if one exists
 
-# nodeModuleCache.stop()
+## nodeModuleCache.stop()
 
 stops the module
 
@@ -37,7 +37,7 @@ stops the module
 nodeModuleCache.stop();
 ```
 
-# nodeModuleCache.saveCache()
+## nodeModuleCache.saveCache()
 
 saves the cache file
 
@@ -45,7 +45,7 @@ saves the cache file
 nodeModuleCache.saveCache();
 ```
 
-# nodeModuleCache.saveStartupList()
+## nodeModuleCache.saveStartupList()
 
 saves the startup file
 
@@ -53,7 +53,7 @@ saves the startup file
 nodeModuleCache.saveStartupList();
 ```
 
-# nodeModuleCache.loadModuleList()
+## nodeModuleCache.loadModuleList()
 
 reloads the modules list from the cache file (if exists) or the startup file (if exists)
 
@@ -61,7 +61,7 @@ reloads the modules list from the cache file (if exists) or the startup file (if
 nodeModuleCache.loadModuleList();
 ```
 
-# nodeModuleCache.stats()
+## nodeModuleCache.stats()
 
 returns a statistics object about the caching effectiveness. The stats object include the following members
 
