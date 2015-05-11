@@ -101,6 +101,57 @@ describe("fast-boot", function () {
       })
     })
   });
+
+  it("should recover from invalid startup file", function(done) {
+    fs.writeFileSync(nodeModuleCache.DEFAULT_STARTUP_FILE, "bla bla bla");
+    var child = runChild("1.0.0", "loadExpress");
+    child.on("message", function(data) {
+
+      logStuff("first", "1.0.0", data);
+      expect(data.statSyncCount).to.exist;
+      done();
+    })
+  });
+
+  it("should recover from invalid cache file", function(done) {
+    fs.writeFileSync(nodeModuleCache.DEFAULT_CACHE_FILE, "bla bla bla");
+    var child = runChild("1.0.0", "loadExpress");
+    child.on("message", function(data) {
+
+      logStuff("first", "1.0.0", data);
+      expect(data.statSyncCount).to.exist;
+      done();
+    })
+  });
+
+  it("should recover from startup file with wrong path", function(done) {
+    fs.writeFileSync(nodeModuleCache.DEFAULT_STARTUP_FILE, JSON.stringify({
+      "_cacheKiller":"1.0.0",
+      "express:.":"non-existant-path"
+    }));
+    var child = runChild("1.0.0", "loadExpress");
+    child.on("message", function(data) {
+
+      logStuff("first", "1.0.0", data);
+      expect(data.statSyncCount).to.exist;
+      done();
+    })
+  });
+
+  it("should recover from cache file with wrong path", function(done) {
+    fs.writeFileSync(nodeModuleCache.DEFAULT_CACHE_FILE, JSON.stringify({
+      "_cacheKiller":"1.0.0",
+      "express:.":"non-existant-path"
+    }));
+    var child = runChild("1.0.0", "loadExpress");
+    child.on("message", function(data) {
+
+      logStuff("first", "1.0.0", data);
+      expect(data.statSyncCount).to.exist;
+      done();
+    })
+  });
+
 });
 
 function loadModuleLocationsCache() {

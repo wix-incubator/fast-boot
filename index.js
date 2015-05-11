@@ -46,7 +46,6 @@ function loadModuleList() {
     tryLoadingFile(options.cacheFile) || tryLoadingFile(options.startupFile);
   }
   catch (e) {
-    console.log(e);
     filenameLookup = newFilenameLookup();
   }
 }
@@ -76,7 +75,6 @@ function saveCache() {
 
 function saveStartupList() {
   fs.writeFileSync(options.startupFile, JSON.stringify(filenameLookup));
-  clearSaveCacheTimer();
 }
 
 var saveCacheTimer;
