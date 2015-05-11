@@ -15,7 +15,7 @@ reduce the number of io operations significantly.
 
 For example, loading of an Express application (with no other modules) without fast-boot compared to with fast-boot -
 
-                  | Without fast-boot   | with fast-boot
+                  | without fast-boot   | with fast-boot
 ----------------- | ------------------- | ---------------
 fs.statSync       |    713              | 0
 fs.readFileSync   |    152              | 62
@@ -31,7 +31,7 @@ the found file locations.
 
 fast-boot caches only modules located in the the projects ```node_modules``` directory.
 
-fast-boot supports two patterns of working
+fast-boot supports two patterns of working:
 
 # cache only
 
