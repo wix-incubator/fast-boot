@@ -1,4 +1,4 @@
- [![NPM version][npm-image]][npm-url] [![Dependency Status][daviddm-url]][daviddm-image]
+# [![NPM version][npm-image]][npm-url]
 
 # fast-boot
 Caching of the FS location of node modules between node process startups
