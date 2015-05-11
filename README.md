@@ -2,16 +2,52 @@
 ![License](https://img.shields.io/npm/l/express.svg)
 
 # fast-boot
-Caching of the FS location of node modules between node process startups
+When Node.js starts, a lot of the time is wasted on loading module files. Of the module loading time, most of the work is
+actually searching for the module file on the filesystem. When you require a module, node will look for it at the ```node_modules```
+folder relative to the requesting module. If not found there, it will start stepping up the folder hierarchy looking
+for the module in each of the parent folders ```node_modules``` folder.
 
-The module hooks into the node module module and changes the ```_resolveFilename``` method, caching the files it finds
-in order to improve node loading performance. Node does tons of file lookups as it resolves modules and by default
-it does not cache the found file locations.
+This search scheme makes node.js do a lot ```fs.statSync``` operations - an operation that throws an exception is the module file
+does not exist.
 
-node-module-location-cache caches only location of files in the ```node_modules``` directory.
+Fast boot caches the location of module files those speeding the loading of the node.js process. By caching the locations, we
+reduce the number of io operations significantly.
 
-by default, node-module-location-cache will save the modules locations cache under node_modules 10 seconds after
-a module was loaded. You can also force it to save the cache or load the cache using the API methods
+For example, loading of an Express application (with no other modules) without fast-boot compared to with fast-boot -
+
+                  | Without fast-boot   | with fast-boot
+----------------- | ------------------- | ---------------
+fs.statSync       |    713              | 0
+fs.readFileSync   |    152              | 62
+fs.existsSync     |     7               | 103
+loading time      |    93 mSec          | 60 mSec
+
+Note that the loading times are measured on a Mac Pro with SSD - on an actual VM running on hardware with spin disk the
+loading times will be considerably larger.
+
+The module hooks into the node module 'module' and wraps the ```_resolveFilename``` method, caching the files it finds
+in order to improve node loading performance. Node does tons of file lookups as it resolves modules and does not cache
+the found file locations.
+
+fast-boot caches only modules located in the the projects ```node_modules``` directory.
+
+fast-boot supports two patterns of working
+
+# cache only
+
+The first time the application runs, fast-boot learns what modules are loaded and saves the list of those modules
+as a cache file (located by default in the tmp folder). The second time the application loads it uses the cache file
+and loads faster. It is assumed the cache file is located on a read/write enabled drive.
+
+# startup and cache file
+
+We can also improve the performance of the first time the application loads using a startup file. The startup file
+is assumed to be created using a build step and distributed with the application sources, assumed to be read-only.
+To create the startup file, load the application with all the modules and call ```saveStartupList()```. By default,
+the startup file is saved in the project ```node_modules``` folder.
+
+Once the application loads using the startup file, any additional modules loaded not in the startup file will cause
+fast-boot to save a cache file in tmp.
 
 # Reference:
 
