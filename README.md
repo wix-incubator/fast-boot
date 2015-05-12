@@ -76,17 +76,17 @@ stops the module
 nodeModuleCache.stop();
 ```
 
-## nodeModuleCache.saveCache()
+## nodeModuleCache.saveCache(callback)
 
-saves the cache file
+saves the cache file. Callback is called after completed save with signature ```function(err) {}```
 
 ```
 nodeModuleCache.saveCache();
 ```
 
-## nodeModuleCache.saveStartupList()
+## nodeModuleCache.saveStartupList(callback)
 
-saves the startup file
+saves the startup file. Callback is called after completed save with signature ```function(err) {}```
 
 ```
 nodeModuleCache.saveStartupList();

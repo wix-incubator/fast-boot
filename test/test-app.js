@@ -37,21 +37,21 @@ fs.existsSync = function(path) {
 
 if (command === "loadExpress") {
   var express = require('express')();
-  fastBoot.saveCache();
+  fastBoot.saveCache(function() {});
 }
 else if (command === "loadExpressAndProjectModule"){
   var testModule = require("./test-module");
   var express = require('express')();
-  fastBoot.saveCache();
+  fastBoot.saveCache(function() {});
 }
 else if (command === "loadExpressAndSaveStartup"){
   var express = require('express')();
-  fastBoot.saveStartupList();
+  fastBoot.saveStartupList(function() {});
 }
 else if (command === "loadExpressAndBrowserify"){
   var express = require('express')();
   var browserify = require('browserify');
-  fastBoot.saveCache();
+  fastBoot.saveCache(function() {});
 }
 
 var stats = fastBoot.stats();

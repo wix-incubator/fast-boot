@@ -98,13 +98,13 @@ function stop() {
   saveCache();
 }
 
-function saveCache() {
-  fs.writeFileSync(options.cacheFile, JSON.stringify(filenameLookup));
+function saveCache(cb) {
+  fs.writeFile(options.cacheFile, JSON.stringify(filenameLookup), cb);
   clearSaveCacheTimer();
 }
 
-function saveStartupList() {
-  fs.writeFileSync(options.startupFile, JSON.stringify(filenameLookup));
+function saveStartupList(cb) {
+  fs.writeFile(options.startupFile, JSON.stringify(filenameLookup), cb);
 }
 
 var saveCacheTimer;
