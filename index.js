@@ -131,7 +131,7 @@ function saveStartupList(cb) {
 function onSaveError(other, fileCaption, fileLocation) {
   return function handleSaveError(err) {
     if (err)
-      options.statusCallback(util.format("failed to save %s file to [%s] with error [%s]", fileCaption, fileLocation, e));
+      options.statusCallback(util.format("failed to save %s file to [%s] with error [%s]", fileCaption, fileLocation, err));
 
     options.statusCallback(util.format("saved %s file to [%s]", fileCaption, fileLocation));
 
@@ -183,4 +183,4 @@ module.exports.stats = function () {
       cacheFile: stats.loading.cacheFile
     }
   }
-}
+};
