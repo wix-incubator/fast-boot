@@ -13,13 +13,15 @@ describe("fast-boot", function () {
     deleteStartupFile();
   });
 
-  xit("should not prevent loading NPM modules", function(done) { // todo this probably failes due to async cache file write
+  it("should not prevent loading NPM modules", function(done) {
     var child = runChild("1.0.0", "loadExpress");
     child.on("message", function(data) {
 
       logStuff("first", "1.0.0", data);
       expect(data.statSyncCount).to.be.above(100);
       expect(data.readFileSyncCount).to.be.above(100);
+      expect(data.loadingStats.startupFile).to.match(/^failed to load or parse startup file from/);
+      expect(data.loadingStats.cacheFile).to.match(/^failed to load or parse cache file from/);
 
       var moduleLocationsCache = loadModuleLocationsCache();
       expect(moduleLocationsCache).to.satisfy(noNonNodeModulesPaths);
@@ -40,6 +42,8 @@ describe("fast-boot", function () {
         expect(data2.cacheMiss).to.be.equal(0);
         expect(data.statSyncCount).to.be.above(data2.statSyncCount);
         expect(data.readFileSyncCount).to.be.above(data2.readFileSyncCount);
+        expect(data2.loadingStats.startupFile).to.match(/^not attempted to load/);
+        expect(data2.loadingStats.cacheFile).to.match(/^loaded cache file from/);
 
         done();
       })

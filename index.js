@@ -1,7 +1,8 @@
 var Module = require('module')
   , fs = require('fs')
   , os = require('os')
-  , path = require('path');
+  , path = require('path')
+  , util = require('util');
 
 var _resolveFilename = Module._resolveFilename;
 var DEFAULT_STARTUP_FILE = path.normalize('./node_modules/module-locations-startup.json');
@@ -9,14 +10,19 @@ var DEFAULT_CACHE_FILE = path.join(os.tmpdir(), 'module-locations-cache.json') ;
 var options = {
   startupFile: DEFAULT_STARTUP_FILE,
   cacheFile: DEFAULT_CACHE_FILE,
-  cacheKiller: versionNumber()
+  cacheKiller: versionNumber(),
+  statusCallback: function(message) {}
 };
 var filenameLookup = newFilenameLookup();
 var cwd = process.cwd();
 var stats = {
   cacheHit: 0,
   cacheMiss: 0,
-  notCached: 0
+  notCached: 0,
+  loading: {
+    startupFile: "not attempted to load",
+    cacheFile: "not attempted to load"
+  }
 };
 
 function toCanonicalPath(filename) {
@@ -60,22 +66,35 @@ function resolveFilenameOptimized(request, parent) {
 
 function loadModuleList() {
 
-  function tryLoadingFile(file) {
-    if (fs.existsSync(file)) {
-      var readFileNameLookup = JSON.parse(fs.readFileSync(file, 'utf-8'));
-      if ((!options.cacheKiller) || (readFileNameLookup._cacheKiller === options.cacheKiller))
-        filenameLookup = readFileNameLookup;
-      return true;
+  stats.loading = {
+    startupFile: "not attempted to load",
+    cacheFile: "not attempted to load"
+  };
+
+  function tryLoadingFile(file, fileCaption, statsMember, fileLocation) {
+    try {
+      if (fs.existsSync(file)) {
+        var readFileNameLookup = JSON.parse(fs.readFileSync(file, 'utf-8'));
+        if ((!options.cacheKiller) || (readFileNameLookup._cacheKiller === options.cacheKiller))
+          filenameLookup = readFileNameLookup;
+        stats.loading[statsMember] = util.format("loaded %s file from [%s]", fileCaption, fileLocation);
+        options.statusCallback(util.format("loaded %s file from [%s]", fileCaption, fileLocation));
+        return true;
+      }
+      stats.loading[statsMember] = util.format("failed to load or parse %s file from [%s]", fileCaption, fileLocation);
+      options.statusCallback(util.format("failed to load or parse %s file from [%s]", fileCaption, fileLocation));
+      return false;
     }
-    return false;
+    catch (e) {
+      stats.loading[statsMember] = util.format("failed to load or parse %s file from [%s] with error [%s]", fileCaption, fileLocation, e);
+      options.statusCallback(util.format("failed to load or parse %s file from [%s] with error [%s]", fileCaption, fileLocation, e));
+      return false;
+    }
   }
 
-  try {
-    tryLoadingFile(options.cacheFile) || tryLoadingFile(options.startupFile);
-  }
-  catch (e) {
-    filenameLookup = newFilenameLookup();
-  }
+  tryLoadingFile(options.cacheFile, "cache", "cacheFile", options.cacheFile) ||
+    tryLoadingFile(options.startupFile, "startup", "startupFile", options.startupFile) ||
+    (filenameLookup = newFilenameLookup());
 }
 
 function start(opts) {
@@ -88,6 +107,8 @@ function start(opts) {
       options.cacheKiller = opts.cacheKiller;
       filenameLookup._cacheKiller = options.cacheKiller;
     }
+    if (opts.statusCallback && typeof opts.statusCallback === 'function')
+      options.statusCallback = opts.statusCallback;
   }
   Module._resolveFilename = resolveFilenameOptimized;
   loadModuleList();
@@ -99,7 +120,7 @@ function stop() {
 }
 
 function saveCache(cb) {
-  fs.writeFile(options.cacheFile, JSON.stringify(filenameLookup), onSaveError(cb));
+  fs.writeFile(options.cacheFile, JSON.stringify(filenameLookup), onSaveError(cb, "cache", options.cacheFile));
   clearSaveCacheTimer();
 }
 
@@ -107,12 +128,12 @@ function saveStartupList(cb) {
   fs.writeFile(options.startupFile, JSON.stringify(filenameLookup), onSaveError(cb));
 }
 
-function onSaveError(other) {
+function onSaveError(other, fileCaption, fileLocation) {
   return function handleSaveError(err) {
     if (err)
-      console.log('Error:', err, err.stack);
+      options.statusCallback(util.format("failed to save %s file to [%s] with error [%s]", fileCaption, fileLocation, e));
 
-    console.log('Cache file saved successfully.');
+    options.statusCallback(util.format("saved %s file to [%s]", fileCaption, fileLocation));
 
     if (other)
       other(err);
@@ -156,6 +177,10 @@ module.exports.stats = function () {
     cacheHit: stats.cacheHit,
     cacheMiss: stats.cacheMiss,
     notCached: stats.notCached,
-    cacheKiller: filenameLookup._cacheKiller
+    cacheKiller: filenameLookup._cacheKiller,
+    loading: {
+      startupFile: stats.loading.startupFile,
+      cacheFile: stats.loading.cacheFile
+    }
   }
 }

@@ -10,7 +10,13 @@ if (process.argv.length > 2)
 if (process.argv.length > 3)
   command = process.argv[3];
 
-fastBoot.start({cacheKiller: version});
+var statusLog = [];
+fastBoot.start({
+  cacheKiller: version,
+  statusCallback: function (message) {
+    statusLog.push(message);
+  }
+});
 
 var orig = {};
 
@@ -37,42 +43,54 @@ fs.existsSync = function(path) {
 
 if (command === "loadExpress") {
   var express = require('express')();
-  fastBoot.saveCache(function() {});
+  fastBoot.saveCache(sendStatus);
 }
 else if (command === "loadExpressAndProjectModule"){
   var testModule = require("./test-module");
   var express = require('express')();
-  fastBoot.saveCache(function() {});
+  fastBoot.saveCache(sendStatus);
 }
 else if (command === "loadExpressAndSaveStartup"){
   var express = require('express')();
-  fastBoot.saveStartupList(function() {});
+  fastBoot.saveStartupList(function() {
+    fastBoot.saveCache(sendStatus);
+  });
 }
 else if (command === "loadExpressAndBrowserify"){
   var express = require('express')();
   var browserify = require('browserify');
-  fastBoot.saveCache(function() {});
+  fastBoot.saveCache(sendStatus);
 }
 
-var stats = fastBoot.stats();
-if (process.send)
-  process.send({
-    statSyncCount: statSyncCount,
-    readFileSyncCount: readFileSyncCount,
-    existsSyncCount: existsSyncCount,
-    loadingTime: process.hrtime(start),
-    cacheHit: stats.cacheHit,
-    cacheMiss: stats.cacheMiss,
-    notCached: stats.notCached
-  });
-else {
-  console.log({
-    statSyncCount: statSyncCount,
-    readFileSyncCount: readFileSyncCount,
-    existsSyncCount: existsSyncCount,
-    loadingTime: process.hrtime(start),
-    cacheHit: stats.cacheHit,
-    cacheMiss: stats.cacheMiss,
-    notCached: stats.notCached
-  })
+function sendStatus(err) {
+
+  if (err)
+    console.log(err);
+
+  var stats = fastBoot.stats();
+  if (process.send)
+    process.send({
+      statSyncCount: statSyncCount,
+      readFileSyncCount: readFileSyncCount,
+      existsSyncCount: existsSyncCount,
+      loadingTime: process.hrtime(start),
+      cacheHit: stats.cacheHit,
+      cacheMiss: stats.cacheMiss,
+      notCached: stats.notCached,
+      loadingStats: stats.loading,
+      statusLog: statusLog
+    });
+  else {
+    console.log({
+      statSyncCount: statSyncCount,
+      readFileSyncCount: readFileSyncCount,
+      existsSyncCount: existsSyncCount,
+      loadingTime: process.hrtime(start),
+      cacheHit: stats.cacheHit,
+      cacheMiss: stats.cacheMiss,
+      notCached: stats.notCached,
+      loadingStats: stats.loading,
+      statusLog: statusLog
+    })
+  }
 }
