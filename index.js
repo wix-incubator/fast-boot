@@ -99,12 +99,24 @@ function stop() {
 }
 
 function saveCache(cb) {
-  fs.writeFile(options.cacheFile, JSON.stringify(filenameLookup), cb);
+  fs.writeFile(options.cacheFile, JSON.stringify(filenameLookup), onSaveError(cb));
   clearSaveCacheTimer();
 }
 
 function saveStartupList(cb) {
-  fs.writeFile(options.startupFile, JSON.stringify(filenameLookup), cb);
+  fs.writeFile(options.startupFile, JSON.stringify(filenameLookup), onSaveError(cb));
+}
+
+function onSaveError(other) {
+  return function handleSaveError(err) {
+    if (err)
+      console.log('Error:', err, err.stack);
+
+    console.log('Cache file saved successfully.');
+
+    if (other)
+      other(err);
+  }
 }
 
 var saveCacheTimer;

@@ -1,6 +1,6 @@
 {
   "name": "fast-boot",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Speeding up node boot time by caching for filesystem location of node modules",
   "main": "index.js",
   "homepage": "https://github.com/wix/fast-boot",
