@@ -65,6 +65,7 @@ Start accepts an options parameter with two options
    * ```cacheFile``` - alternate cache file location. Defaults to ```{os.tmpdir()}/module-locations-cache.json```
    * ```startupFile``` - alternate startup file location. Defaults to ```./node_modules/module-locations-cache.json```, relative to the ```process.cwd()```
    * ```cacheKiller``` - used to invalidate the cache. Normally one will pass the application version number assuming that a different version
+   * ```statusCallback``` - callback function called each time fast boot loads or saves. ```function(message)```
    may have different version of dependencies making modules located in different locations. The default is the version number from package.json,
    if one exists
 
@@ -108,6 +109,8 @@ returns a statistics object about the caching effectiveness. The stats object in
 * cacheMiss - the number of modules who's locations were not found in the cache - and were added to the cache file
 * notCached - the number of modules not to be cached - either not in a node_modules folder or not under process.cwd()
 * cacheKiller - the current value of the cache killer
+* statusCallback.startupFile - most recent status of loading a startup file
+* statusCallback.cacheFile - most recent status of loading a cache file
 
 ```
 var stats = nodeModuleCache.stats();
