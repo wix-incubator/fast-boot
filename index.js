@@ -20,8 +20,8 @@ var stats = {
   cacheMiss: 0,
   notCached: 0,
   loading: {
-    startupFile: "not attempted to load",
-    cacheFile: "not attempted to load"
+    startupFile: "did not attempted to load startup file",
+    cacheFile: "did not attempted to load cache file"
   }
 };
 
@@ -47,6 +47,7 @@ function resolveFilenameOptimized(request, parent) {
 
   if (filename && fs.existsSync(filename)) {
     stats.cacheHit++;
+    options.statusCallback(util.format("cache hit on module [%s]", filename));
     return filename;
   }
   else {
@@ -55,9 +56,11 @@ function resolveFilenameOptimized(request, parent) {
     if (canonical && canonical.indexOf("node_modules") > -1) {
       filenameLookup[key] = canonical;
       scheduleSaveCache();
+      options.statusCallback(util.format("cache miss on module [%s]", filename));
       stats.cacheMiss++;
     }
     else {
+      options.statusCallback(util.format("module [%s] not cached", filename));
       stats.notCached++;
     }
     return filename;
@@ -67,27 +70,33 @@ function resolveFilenameOptimized(request, parent) {
 function loadModuleList() {
 
   stats.loading = {
-    startupFile: "not attempted to load",
-    cacheFile: "not attempted to load"
+    startupFile: "did not attempted to load startup file",
+    cacheFile: "did not attempted to load cache file"
   };
 
   function tryLoadingFile(file, fileCaption, statsMember, fileLocation) {
+
+    function report(message) {
+      stats.loading[statsMember] = message;
+      options.statusCallback(message);
+    }
+
     try {
       if (fs.existsSync(file)) {
         var readFileNameLookup = JSON.parse(fs.readFileSync(file, 'utf-8'));
-        if ((!options.cacheKiller) || (readFileNameLookup._cacheKiller === options.cacheKiller))
+        if ((!options.cacheKiller) || (readFileNameLookup._cacheKiller === options.cacheKiller)) {
           filenameLookup = readFileNameLookup;
-        stats.loading[statsMember] = util.format("loaded %s file from [%s]", fileCaption, fileLocation);
-        options.statusCallback(util.format("loaded %s file from [%s]", fileCaption, fileLocation));
+          report(util.format("loaded %s file from [%s]", fileCaption, fileLocation));
+        }
+        else
+          report(util.format("dismissed %s file from [%s] because of different cache killer", fileCaption, fileLocation));
         return true;
       }
-      stats.loading[statsMember] = util.format("failed to load or parse %s file from [%s]", fileCaption, fileLocation);
-      options.statusCallback(util.format("failed to load or parse %s file from [%s]", fileCaption, fileLocation));
+      report(util.format("%s file not found at [%s]", fileCaption, fileLocation));
       return false;
     }
     catch (e) {
-      stats.loading[statsMember] = util.format("failed to load or parse %s file from [%s] with error [%s]", fileCaption, fileLocation, e);
-      options.statusCallback(util.format("failed to load or parse %s file from [%s] with error [%s]", fileCaption, fileLocation, e));
+      report(util.format("failed to load or parse %s file from [%s] with error [%s]", fileCaption, fileLocation, e));
       return false;
     }
   }
@@ -157,8 +166,7 @@ function versionNumber() {
     return require('./package.json').version.toString();
   }
   catch (e) {
-    return undefined;
-  }
+    return undefined;                           }
 }
 
 function newFilenameLookup() {
