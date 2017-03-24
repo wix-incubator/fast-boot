@@ -15,12 +15,12 @@ reduce the number of io operations significantly.
 
 For example, loading of an Express application (with no other modules) without fast-boot compared to with fast-boot -
 
-                  | without fast-boot   | with fast-boot
------------------ | ------------------- | ---------------
-fs.statSync       |    713              | 0
-fs.readFileSync   |    152              | 62
-fs.existsSync     |     7               | 103
-loading time      |    93 mSec          | 60 mSec
+| description     | without fast-boot | with fast-boot |
+|-----------------|-------------------|----------------|
+| fs.statSync     | 713               | 0              |
+| fs.readFileSync | 152               | 62             |
+| fs.existsSync   | 7                 | 103            |
+| loading time    | 93 mSec           | 60 mSec        |
 
 Note that the loading times are measured on a Mac Pro with SSD - on an actual VM running on hardware with spin disk the
 loading times will be considerably larger.
