@@ -7,7 +7,7 @@ actually searching for the module file on the filesystem. When you require a mod
 folder relative to the requesting module. If not found there, it will start stepping up the folder hierarchy looking
 for the module in each of the parent folders ```node_modules``` folder.
 
-This search scheme makes node.js do a lot ```fs.statSync``` operations - an operation that throws an exception is the module file
+This search scheme makes node.js do a lot ```fs.statSync``` operations - an operation that throws an exception if the module file
 does not exist.
 
 Fast boot caches the location of module files those speeding the loading of the node.js process. By caching the locations, we
