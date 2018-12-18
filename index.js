@@ -13,6 +13,7 @@ var options = {
   cacheKiller: versionNumber(),
   statusCallback: function(message) {}
 };
+var existsSyncCache = {};
 var filenameLookup = newFilenameLookup();
 var cwd = process.cwd();
 var stats = {
@@ -45,7 +46,8 @@ function resolveFilenameOptimized(request, parent) {
   if (canonical)
     filename = toAbsolutePath(canonical);
 
-  if (filename && fs.existsSync(filename)) {
+  if (filename && (existsSyncCache[filename] || fs.existsSync(filename))) {
+    existsSyncCache[filename] = true;
     stats.cacheHit++;
     options.statusCallback(util.format("cache hit on module [%s]", filename));
     return filename;
@@ -54,6 +56,7 @@ function resolveFilenameOptimized(request, parent) {
     filename = _resolveFilename.apply(Module, arguments);
     canonical = toCanonicalPath(filename);
     if (canonical && canonical.indexOf("node_modules") > -1) {
+      existsSyncCache[canonical] = true;
       filenameLookup[key] = canonical;
       scheduleSaveCache();
       options.statusCallback(util.format("cache miss on module [%s]", filename));
