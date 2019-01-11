@@ -8,6 +8,7 @@ var _resolveFilename = Module._resolveFilename;
 var DEFAULT_STARTUP_FILE = path.normalize('./node_modules/module-locations-startup.json');
 var DEFAULT_CACHE_FILE = path.join(os.tmpdir(), 'module-locations-cache.json') ;
 var options = {
+  saveTimeout: 1000,
   startupFile: DEFAULT_STARTUP_FILE,
   cacheFile: DEFAULT_CACHE_FILE,
   cacheKiller: versionNumber(),
@@ -113,6 +114,8 @@ function start(opts) {
   if (opts) {
     if (opts.cacheFile)
       options.cacheFile = opts.cacheFile;
+    if (opts.saveTimeout)
+      options.saveTimeout = opts.saveTimeout;
     if (opts.startupFile)
       options.startupFile = opts.startupFile;
     if (opts.cacheKiller) {
@@ -161,7 +164,7 @@ function clearSaveCacheTimer() {
 }
 function scheduleSaveCache() {
   clearSaveCacheTimer();
-  saveCacheTimer = setTimeout(saveCache, 10*1000);
+  saveCacheTimer = setTimeout(saveCache, options.saveTimeout);
 }
 
 function versionNumber() {
