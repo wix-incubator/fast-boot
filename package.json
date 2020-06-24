@@ -3,15 +3,15 @@
   "version": "1.0.9",
   "description": "Speeding up node boot time by caching for filesystem location of node modules",
   "main": "index.js",
-  "homepage": "https://github.com/balena-io-playground/fast-boot",
+  "homepage": "https://github.com/balena-io-modules/fast-boot",
   "author": "Yoav Abrahami",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@github.com:balena-io-playground/fast-boot.git"
+    "url": "git@github.com:balena-io-modules/fast-boot.git"
   },
   "bugs": {
-    "url": "https://github.com/balena-io-playground/fast-boot/issues"
+    "url": "https://github.com/balena-io-modules/fast-boot/issues"
   },
   "scripts": {
     "test": "grunt test"
