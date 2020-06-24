@@ -62,6 +62,7 @@ nodeModuleCache.start(opts);
 ```
 
 Start accepts an options parameter with two options
+   * ```cacheScope``` - alternate cache scope. Defaults to ```process.cwd()```
    * ```cacheFile``` - alternate cache file location. Defaults to ```{os.tmpdir()}/module-locations-cache.json```
    * ```startupFile``` - alternate startup file location. Defaults to ```./node_modules/module-locations-cache.json```, relative to the ```process.cwd()```
    * ```cacheKiller``` - used to invalidate the cache. Normally one will pass the application version number assuming that a different version

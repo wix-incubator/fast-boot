@@ -11,12 +11,12 @@ var options = {
   saveTimeout: 1000,
   startupFile: DEFAULT_STARTUP_FILE,
   cacheFile: DEFAULT_CACHE_FILE,
+  cacheScope: process.cwd(),
   cacheKiller: versionNumber(),
   statusCallback: function(message) {}
 };
 var existsSyncCache = {};
 var filenameLookup = newFilenameLookup();
-var cwd = process.cwd();
 var stats = {
   cacheHit: 0,
   cacheMiss: 0,
@@ -28,8 +28,8 @@ var stats = {
 };
 
 function toCanonicalPath(filename) {
-  var relative = path.relative(cwd, filename);
-  // do not cache files outside of the process.cwd() scope
+  var relative = path.relative(options.cacheScope, filename);
+  // do not cache files outside of the cache scope
   if (relative.indexOf("..") == 0)
     return undefined;
 
@@ -37,7 +37,7 @@ function toCanonicalPath(filename) {
 }
 
 function toAbsolutePath(filename) {
-  return path.join(cwd, filename);
+  return path.join(options.cacheScope, filename);
 }
 
 function resolveFilenameOptimized(request, parent) {
@@ -114,6 +114,8 @@ function start(opts) {
   if (opts) {
     if (opts.cacheFile)
       options.cacheFile = opts.cacheFile;
+    if (opts.cacheScope)
+      options.cacheScope = opts.cacheScope;
     if (opts.saveTimeout)
       options.saveTimeout = opts.saveTimeout;
     if (opts.startupFile)
